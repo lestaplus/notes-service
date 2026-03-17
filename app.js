@@ -1,15 +1,14 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const { Pool } = require("pg");
+const pool = require('./db');
+const notesRouter = require('./routes/notes.routes');
 
 const app = express();
 
 const configPath = process.env.CONFIG_PATH || "./config.json";
 const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 const PORT = config.port;
-
-const pool = new Pool(config.database);
 
 app.use(express.json());
 
@@ -34,25 +33,7 @@ app.get("/", (req, res) => {
   }
 });
 
-app.post("/notes", async (req, res) => {
-  const { title, content } = req.body;
-
-  if (!title || !content) {
-    return res.status(400).json({ error: "Title and content are required" });
-  }
-
-  try {
-    const result = await pool.query(
-      "INSERT INTO notes (title, content) VALUES ($1, $2) RETURNING *",
-      [title, content],
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", details: error.message });
-  }
-});
+app.use('/', notesRouter);
 
 app.listen(PORT, () => {
   console.log(`App is running on port ${PORT}`);
