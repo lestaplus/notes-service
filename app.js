@@ -1,8 +1,8 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const pool = require('./db');
-const notesRouter = require('./routes/notes.routes');
+const pool = require("./db");
+const notesRouter = require("./routes/notes.routes");
 
 const app = express();
 
@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
   }
 });
 
-app.use('/', notesRouter);
+app.use("/", notesRouter);
 
 app.listen(PORT, () => {
   console.log(`App is running on port ${PORT}`);
