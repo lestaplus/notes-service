@@ -6,8 +6,13 @@ const notesRouter = require("./routes/notes.routes");
 
 const app = express();
 
-const configPath = process.env.CONFIG_PATH || "./config.json";
-const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+let config;
+try {
+  config = JSON.parse(fs.readFileSync("/etc/mywebapp/config.json", "utf8"));
+} catch (error) {
+  config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+}
+
 const PORT = config.port;
 
 app.use(express.json());
@@ -35,6 +40,12 @@ app.get("/", (req, res) => {
 
 app.use("/", notesRouter);
 
-app.listen(PORT, () => {
-  console.log(`App is running on port ${PORT}`);
-});
+if (process.env.LISTEN_FDS === "1") {
+  app.listen({ fd: 3 }, () => {
+    console.log("App is running via systemd socket activation");
+  });
+} else {
+  app.listen(PORT, () => {
+    console.log(`App is running on port ${PORT}`);
+  });
+}

@@ -55,6 +55,7 @@ class NotesController {
                 )
                 .join("")}
             </table>
+            <a href="/">Back to the main page</a>
           </body>
           </html>
         `;
