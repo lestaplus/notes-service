@@ -94,7 +94,14 @@ chown -R app:app /opt/mywebapp
 echo "Configuring application settings"
 
 mkdir -p /etc/mywebapp
-cp /opt/mywebapp/config.json /etc/mywebapp/config.json
+
+if [ -f /opt/mywebapp/config.json ]; then
+  cp /opt/mywebapp/config.json /etc/mywebapp/config.json
+else
+  echo "config.json not found, using config.example.json"
+  cp /opt/mywebapp/config.example.json /etc/mywebapp/config.json
+fi
+
 chown -R app:app /etc/mywebapp
 chmod 600 /etc/mywebapp/config.json
 
