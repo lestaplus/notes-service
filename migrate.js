@@ -1,8 +1,12 @@
 const { Client } = require("pg");
 const fs = require("fs");
 
-const configPath = process.env.CONFIG_PATH || "./config.json";
-const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+let config;
+try {
+  config = JSON.parse(fs.readFileSync("/etc/mywebapp/config.json", "utf8"));
+} catch (error) {
+  config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+}
 
 async function runMigration() {
   const client = new Client(config.database);
