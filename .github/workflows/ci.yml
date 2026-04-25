@@ -92,8 +92,8 @@ jobs:
           
           ssh -o StrictHostKeyChecking=no user@192.168.1.21 "
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ghcr.io/\$REPO:latest
+            docker pull ghcr.io/${REPO}:latest
             docker stop notes-app || true
             docker rm notes-app || true
-            docker run -d --name notes-app -p 3000:3000 -v /home/user/config.json:/etc/mywebapp/config.json ghcr.io/\$REPO:latest
+            docker run -d --name notes-app -p 3000:3000 -v /home/user/config.json:/etc/mywebapp/config.json ghcr.io/${REPO}:latest
           "
