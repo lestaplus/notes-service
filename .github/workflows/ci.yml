@@ -18,10 +18,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Create fake config for tests
+        run: |
+          echo '{"port": 3000, "database": {}}' > config.json
 
       - name: Run Linter
         run: npm run lint
