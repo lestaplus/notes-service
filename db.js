@@ -4,7 +4,7 @@ const fs = require("fs");
 let config;
 try {
   config = JSON.parse(fs.readFileSync("/etc/mywebapp/config.json", "utf8"));
-} catch (error) {
+} catch {
   config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
 }
 

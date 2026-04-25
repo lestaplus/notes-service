@@ -2,9 +2,11 @@
   "name": "notes-service",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "lint": "eslint .",
+    "test": "jest --coverage"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +14,19 @@
   "dependencies": {
     "express": "^5.2.1",
     "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.2.1",
+    "globals": "^17.5.0",
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "lines": 40
+      }
+    }
   }
 }

@@ -9,7 +9,7 @@ const app = express();
 let config;
 try {
   config = JSON.parse(fs.readFileSync("/etc/mywebapp/config.json", "utf8"));
-} catch (error) {
+} catch {
   config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
 }
 
@@ -40,12 +40,16 @@ app.get("/", (req, res) => {
 
 app.use("/", notesRouter);
 
-if (process.env.LISTEN_FDS === "1") {
-  app.listen({ fd: 3 }, () => {
-    console.log("App is running via systemd socket activation");
-  });
-} else {
-  app.listen(PORT, () => {
-    console.log(`App is running on port ${PORT}`);
-  });
+module.exports = app;
+
+if (require.main === module) {
+  if (process.env.LISTEN_FDS === "1") {
+    app.listen({ fd: 3 }, () => {
+      console.log("App is running via systemd socket activation");
+    });
+  } else {
+    app.listen(PORT, () => {
+      console.log(`App is running on port ${PORT}`);
+    });
+  }
 }
