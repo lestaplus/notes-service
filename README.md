@@ -92,3 +92,46 @@
 2. Перейдіть за адресою `http://localhost:8080/`. Має відобразитися стартова HTML-сторінка (перевірка роботи Nginx reverse proxy та Node.js).
 3. Перейдіть на `http://localhost:8080/notes`. Має відобразитися порожня таблиця або список нотаток (перевірка підключення до PostgreSQL).
 4. Перейдіть на `http://localhost:8080/health/ready`. Якщо повертається `OK`, конфігурація та сокет-активація systemd працюють коректно.
+
+---
+
+## CI/CD Конвеєр (Лабораторна робота №3)
+
+У проєкті налаштовано автоматизований CI/CD конвеєр за допомогою **GitHub Actions**:
+1. **Continuous Integration (CI):** При пуші в гілку `main` або створенні Pull Request код автоматично перевіряється лінтером (ESLint) та покривається юніт-тестами (Jest). Заблоковано злиття PR, якщо перевірки не пройдено.
+2. **Container Registry:** Успішно протестований код збирається в Docker-образ та автоматично публікується у GitHub Container Registry (GHCR). Застосовується автоматичне тегування (`latest`, унікальний `sha`, та `stable` для релізів).
+3. **Continuous Deployment (CD):** Власний Self-hosted Runner автоматично підключається до цільової ноди, завантажує свіжий образ з GHCR, виконує розгортання та автоматичну HTTP-верифікацію застосунку.
+
+### Запуск готового образу з GHCR
+
+Ви можете завантажити вже зібраний production-образ з репозиторію командою:
+```bash
+docker pull ghcr.io/lestaplus/notes-service:latest
+```
+
+### Приклад швидкого локального запуску
+
+Щоб не створювати конфігураційні файли вручну, ви можете просто скопіювати і виконати ці команди. Вони автоматично створять тестовий конфіг і запустять обидва контейнери:
+
+**Для користувачів Linux / Mac / WSL (Bash):**
+```bash
+# 1. Створюємо тестовий конфіг
+echo '{"port": 3000, "database": {"host": "172.17.0.1", "port": 5432, "user": "postgres", "password": "mypassword", "database": "postgres"}}' > config.json
+
+# 2. Запускаємо базу даних
+docker run -d --name notes-db -e POSTGRES_PASSWORD=mypassword -p 5432:5432 postgres:15
+
+# 3. Запускаємо застосунок
+docker run -d --name notes-app -p 3000:3000 -v $(pwd)/config.json:/etc/mywebapp/config.json ghcr.io/lestaplus/notes-service:latest
+```
+
+**Для користувачів Windows (PowerShell):**
+```powershell
+echo '{"port": 3000, "database": {"host": "host.docker.internal", "port": 5432, "user": "postgres", "password": "mypassword", "database": "postgres"}}' > config.json
+
+docker run -d --name notes-db -e POSTGRES_PASSWORD=mypassword -p 5432:5432 postgres:15
+
+docker run -d --name notes-app -p 3000:3000 -v ${PWD}\config.json:/etc/mywebapp/config.json ghcr.io/lestaplus/notes-service:latest
+```
+
+Після виконання команд застосунок буде доступний за адресою: `http://localhost:3000`
