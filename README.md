@@ -111,27 +111,38 @@ docker pull ghcr.io/lestaplus/notes-service:latest
 
 ### Приклад швидкого локального запуску
 
-Щоб не створювати конфігураційні файли вручну, ви можете просто скопіювати і виконати ці команди. Вони автоматично створять тестовий конфіг і запустять обидва контейнери:
+Щоб не створювати конфігураційні файли вручну, ви можете просто скопіювати і виконати ці команди. Вони автоматично створять ізольовану мережу, тестовий конфіг і запустять контейнери без конфліктів із локальними сервісами:
 
 **Для користувачів Linux / Mac / WSL (Bash):**
 ```bash
-# 1. Створюємо тестовий конфіг
-echo '{"port": 3000, "database": {"host": "172.17.0.1", "port": 5432, "user": "postgres", "password": "mypassword", "database": "postgres"}}' > config.json
+# 1. Створюємо віртуальну мережу
+docker network create notes-net
 
-# 2. Запускаємо базу даних
-docker run -d --name notes-db -e POSTGRES_PASSWORD=mypassword -p 5432:5432 postgres:15
+# 2. Створюємо тестовий конфіг
+echo '{"port": 3000, "database": {"host": "notes-db", "port": 5432, "user": "postgres", "password": "mypassword", "database": "postgres"}}' > config.json
 
-# 3. Запускаємо застосунок
-docker run -d --name notes-app -p 3000:3000 -v $(pwd)/config.json:/etc/mywebapp/config.json ghcr.io/lestaplus/notes-service:latest
+# 3. Запускаємо базу даних у мережі
+docker run -d --name notes-db --network notes-net -e POSTGRES_PASSWORD=mypassword postgres:15
+
+# 4. Запускаємо застосунок
+docker run -d --name notes-app --network notes-net -p 3000:3000 -v $(pwd)/config.json:/etc/mywebapp/config.json ghcr.io/lestaplus/notes-service:latest
 ```
+
+*Примітка: Якщо під час виконання команд на Linux виникає помилка `permission denied`, виконайте їх з правами суперкористувача (додавши `sudo` перед `docker`), або додайте вашого користувача до групи `docker` (`sudo usermod -aG docker $USER`).*
 
 **Для користувачів Windows (PowerShell):**
 ```powershell
-echo '{"port": 3000, "database": {"host": "host.docker.internal", "port": 5432, "user": "postgres", "password": "mypassword", "database": "postgres"}}' > config.json
+# 1. Створюємо віртуальну мережу
+docker network create notes-net
 
-docker run -d --name notes-db -e POSTGRES_PASSWORD=mypassword -p 5432:5432 postgres:15
+# 2. Створюємо конфіг (з UTF-8 кодуванням)
+[System.IO.File]::WriteAllText("$PWD\config.json", '{"port": 3000, "database": {"host": "notes-db", "port": 5432, "user": "postgres", "password": "mypassword", "database": "postgres"}}')
 
-docker run -d --name notes-app -p 3000:3000 -v ${PWD}\config.json:/etc/mywebapp/config.json ghcr.io/lestaplus/notes-service:latest
+# 3. Запускаємо базу даних
+docker run -d --name notes-db --network notes-net -e POSTGRES_PASSWORD=mypassword postgres:15
+
+# 4. Запускаємо застосунок
+docker run -d --name notes-app --network notes-net -p 3000:3000 --mount type=bind,source="$PWD\config.json",target=/etc/mywebapp/config.json ghcr.io/lestaplus/notes-service:latest
 ```
 
 Після виконання команд застосунок буде доступний за адресою: `http://localhost:3000`
