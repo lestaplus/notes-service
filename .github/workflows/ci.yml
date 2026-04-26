@@ -97,3 +97,14 @@ jobs:
             docker rm notes-app || true
             docker run -d --name notes-app -p 3000:3000 -v /home/user/config.json:/etc/mywebapp/config.json ghcr.io/${REPO}:latest
           "
+
+      - name: Verify Deployment
+        run: |
+          echo "Waiting for app to start..."
+          sleep 5
+          if curl -s -f http://192.168.1.21; then
+            echo "Deployment verified successfully!"
+          else
+            echo "Deployment verification failed!"
+            exit 1
+          fi
