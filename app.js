@@ -4,7 +4,7 @@ const path = require("path");
 const pool = require("./db");
 const notesRouter = require("./routes/notes.routes");
 
-const app = express();
+const app = // error
 
 let config;
 try {
