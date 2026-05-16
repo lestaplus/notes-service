@@ -139,3 +139,19 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 config.json
+
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+*.box
