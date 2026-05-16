@@ -1,0 +1,115 @@
+---
+- name: Add Node.js APT key
+  apt_key:
+    url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
+    state: present
+
+- name: Add Node.js repository
+  apt_repository:
+    repo: "deb https://deb.nodesource.com/node_20.x nodistro main"
+    state: present
+    update_cache: yes
+
+- name: Install Node.js and rsync
+  apt:
+    name: 
+      - nodejs
+      - rsync
+    state: present
+
+- name: Create app user
+  user:
+    name: app
+    system: yes
+    shell: /usr/sbin/nologin
+
+- name: Create operator user
+  user:
+    name: operator
+    password: "{{ '12345678' | password_hash('sha512') }}"
+    shell: /bin/bash
+
+- name: Configure sudo for operator
+  copy:
+    content: "operator ALL=(ALL) NOPASSWD: /bin/systemctl start mywebapp.service, /bin/systemctl stop mywebapp.service, /bin/systemctl restart mywebapp.service, /bin/systemctl status mywebapp.service, /bin/systemctl reload nginx\n"
+    dest: /etc/sudoers.d/operator
+    mode: '0440'
+
+- name: Ensure app directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: app
+    group: app
+  loop:
+    - /opt/mywebapp
+    - /etc/mywebapp
+
+- name: Copy application code
+  synchronize:
+    src: "{{ playbook_dir }}/../../"
+    dest: /opt/mywebapp/
+    rsync_opts:
+      - "--exclude=iac"
+      - "--exclude=.git"
+      - "--exclude=node_modules"
+
+- name: Install npm dependencies
+  npm:
+    path: /opt/mywebapp
+
+- name: Set ownership for app code
+  file:
+    path: /opt/mywebapp
+    owner: app
+    group: app
+    recurse: yes
+
+- name: Generate config.json from template
+  template:
+    src: config.json.j2
+    dest: /etc/mywebapp/config.json
+    owner: app
+    group: app
+    mode: '0600'
+
+- name: Create systemd socket
+  copy:
+    dest: /etc/systemd/system/mywebapp.socket
+    content: |
+      [Unit]
+      Description=Socket for mywebapp
+      
+      [Socket]
+      ListenStream=3000
+      
+      [Install]
+      WantedBy=sockets.target
+
+- name: Create systemd service
+  copy:
+    dest: /etc/systemd/system/mywebapp.service
+    content: |
+      [Unit]
+      Description=Node.js Notes Service
+      Requires=mywebapp.socket
+      After=network.target postgresql.service mywebapp.socket
+      
+      [Service]
+      Type=simple
+      User=app
+      WorkingDirectory=/opt/mywebapp
+      ExecStartPre=/usr/bin/node /opt/mywebapp/migrate.js
+      ExecStart=/usr/bin/node /opt/mywebapp/app.js
+      Restart=on-failure
+      Environment=NODE_ENV=production
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start socket
+  systemd:
+    name: mywebapp.socket
+    enabled: yes
+    state: started
