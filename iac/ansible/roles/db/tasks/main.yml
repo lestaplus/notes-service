@@ -1,0 +1,41 @@
+---
+- name: Install PostgreSQL and python deps
+  apt:
+    name: 
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+      - acl
+    state: present
+    update_cache: yes
+
+- name: Create database user (student)
+  postgresql_user:
+    name: student
+    password: mypassword
+    role_attr_flags: LOGIN
+  become_user: postgres
+
+- name: Create database (notes_db)
+  postgresql_db:
+    name: notes_db
+    owner: student
+  become_user: postgres
+
+- name: Configure PostgreSQL to listen on all interfaces
+  lineinfile:
+    path: /etc/postgresql/14/main/postgresql.conf
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '*'"
+  notify: restart postgresql
+
+- name: Allow worker to connect to database
+  postgresql_pg_hba:
+    dest: /etc/postgresql/14/main/pg_hba.conf
+    contype: host
+    databases: notes_db
+    users: student
+    address: "{{ hostvars['worker_node']['ansible_host'] }}/32"
+    method: md5
+  become_user: postgres
+  notify: restart postgresql

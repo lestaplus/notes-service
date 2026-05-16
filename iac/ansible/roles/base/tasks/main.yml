@@ -1,0 +1,23 @@
+---
+- name: Create teacher user
+  user:
+    name: teacher
+    password: "{{ '12345678' | password_hash('sha512') }}"
+    groups: sudo
+    append: yes
+    shell: /bin/bash
+
+- name: Create student user
+  user:
+    name: student
+    groups: sudo
+    append: yes
+    shell: /bin/bash
+
+- name: Create gradebook file
+  copy:
+    content: "27\n"
+    dest: /home/student/gradebook
+    owner: student
+    group: student
+    mode: '0644'
