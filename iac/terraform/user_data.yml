@@ -1,0 +1,10 @@
+#cloud-config
+users:
+  - name: ansible
+    groups: sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDAbSXJwmO46JuHglOIc/veBvGI+/lW3L3CXmm7tE+V4sTnwOzjH+wJ54nGTNGz1fiUJhWnzG/Sy+T5FZUTMe3VHFBAv6q0nOTHWCAo2xc7VnNzQ3wtgtCNAuEFS1C3a6JaPZ3kHPl4PvE/2Iw8ikmA80aJibGPT48nj5ajdBmnQX5wMfv495H+gF9hBEdIa265OSwMVKGhnsMAx/AXkHEyEnkB+a3BzebqPCHtg/ppO2cgr3RRjjTdudFGOTA3BGX5THSZcwy6gyuzC1onZLYynusDkz05Z9tLTDhov7YAyKrB43DNdWg89gamkuMCklXJBABYeOZji/yjuVaRyUB6UGm8a81Kb1cNJLMMR4AK9wbaNqYaBSveyRmqBLE4m2cX50X74g48XbVijwezhRhV68N4lQqUnEh2S5/98D+5Oeja97Su0uubf2xy5dwch2mjH3ZVP0vx2QsDTAOWEXaIrEQUAlLDahixkboxfkPWYRRJ2rvtkEWBInBe6L+o8/sSDhoOZZWatVX7XvyR4ygX7tocSTS6S7baY34bP1VmqV1J9K8F6J8nLaKvcGq0P5Ugm78S1I9KNUD1DThBpKO/kc3+It2oVfBJqdJZXBk76aicylMc0/18g4MnucipTYZ8BaCPOFHE99/L9ONl+3VjB9K3prkoQhtdZ2Ngc3qyIw== ansible_key
+
+ssh_pwauth: true
